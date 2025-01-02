@@ -1,3 +1,4 @@
+// Importing necessary modules and components
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Form, Button } from "react-bootstrap";
@@ -8,26 +9,37 @@ import Loader from "../components/Loader";
 import { setCredentials } from "../slices/authSlice";
 import { useUpdateUserMutation } from "../slices/usersApiSlice";
 
+// Functional component to create the profile screen
 const ProfileScreen = () => {
+  // State variables to store form input values
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  // Mutation hook for updating user
   const [updateUser, { isLoading }] = useUpdateUserMutation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
+  // Access user info from Redux state
   const { userInfo } = useSelector((state) => state.auth);
 
+  // Effect to set form input values when userInfo changes
   useEffect(() => {
     setName(userInfo.name);
     setEmail(userInfo.email);
   }, [userInfo.name, userInfo.email]);
+
+  // Submit handler function for the profile update form
   const submitHandler = async (e) => {
     e.preventDefault();
+    // Check if password and confirm password match
     if (password !== confirmPassword) {
-      toast.error("Password do not match");
+      toast.error("Passwords do not match");
     } else {
       try {
+        // Call the update user API and dispatch updated credentials to Redux state
         const res = await updateUser({
           _id: userInfo._id,
           name,
@@ -35,17 +47,19 @@ const ProfileScreen = () => {
           password,
         }).unwrap();
         dispatch(setCredentials({ ...res }));
-        toast.success("Profile Updated Successfully");
+        toast.success("Profile Updated Successfully"); // Show success toast
       } catch (err) {
-        toast.error(err?.data?.message || err?.error);
+        toast.error(err?.data?.message || err?.error); // Show error toast
       }
     }
   };
 
   return (
     <>
+      {/* Form container component */}
       <FormContainer>
         <h1>Update Profile</h1>
+        {/* Profile update form */}
         <Form onSubmit={submitHandler}>
           <Form.Group className="my-2" controlId="name">
             <Form.Label>Name</Form.Label>
@@ -83,7 +97,7 @@ const ProfileScreen = () => {
               onChange={(e) => setConfirmPassword(e.target.value)}
             ></Form.Control>
           </Form.Group>
-          {isLoading && <Loader />}
+          {isLoading && <Loader />} {/* Show loader while updating profile */}
           <Button type="submit" variant="primary" className="mt-3">
             Update
           </Button>
@@ -93,4 +107,5 @@ const ProfileScreen = () => {
   );
 };
 
+// Exporting the ProfileScreen component as the default export
 export default ProfileScreen;
